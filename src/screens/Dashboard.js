@@ -1,229 +1,102 @@
-import React from "react";
-import { View, StyleSheet, ScrollView, Image } from "react-native";
-import { Card, Text, Button, useTheme } from "react-native-paper";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { Text, Button, Card, IconButton, useTheme } from "react-native-paper";
+import firestore from "@react-native-firebase/firestore";
 
-export default function Dashboard() {
-  const { colors } = useTheme();
+export default function DashboardScreen({ route }) {
+    const theme = useTheme();
+    const { deviceId } = route.params;
 
-  return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.secondary }}
-      contentContainerStyle={{ padding: 16 }}
-    >
-      {/* ---------- RECEIVER HEADER ---------- */}
-      <Card style={[styles.card, { backgroundColor: colors.surface }]}>
-        <Card.Content>
-          <Text style={[styles.title, { color: colors.text }]}>Receiver Receiver</Text>
+    const [status, setStatus] = useState("Checking...");
 
-          <Text style={[styles.label, { marginTop: 4, color: colors.subtext }]}>
-            Linked Device:
-          </Text>
-          <Text style={[styles.value, { color: colors.primary }]}>84HJDJ32</Text>
+    // Listen for live status from emitter
+    useEffect(() => {
+        const unsub = firestore()
+            .collection("status")
+            .doc(deviceId)
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+                    setStatus(doc.data().recording ? "Recording" : "Idle");
+                }
+            });
 
-          <View style={styles.row}>
-            <Button
-              mode="contained"
-              style={[styles.btnPrimary, { backgroundColor: colors.primary }]}
-              labelStyle={{ color: colors.secondary }}
-            >
-              Start Recording
-            </Button>
+        return () => unsub();
+    }, []);
 
-            <Button
-              mode="outlined"
-              style={[styles.btn, { borderColor: colors.text }]}
-              labelStyle={{ color: colors.text }}
-            >
-              Stop
-            </Button>
+    // Send remote command
+    const sendCommand = async (cmd) => {
+        await firestore()
+            .collection("control")
+            .doc(deviceId)
+            .set({
+                command: cmd,
+                time: Date.now(),
+            });
 
-            <Button
-              mode="outlined"
-              style={[styles.btn, { borderColor: colors.text }]}
-              labelStyle={{ color: colors.text }}
-            >
-              Recording
-            </Button>
+        console.log("📡 Sent Command:", cmd);
+    };
 
-            <Button
-              mode="outlined"
-              style={[styles.btn, { borderColor: colors.text }]}
-              labelStyle={{ color: colors.text }}
-            >
-              Duration ⌄
-            </Button>
-          </View>
-        </Card.Content>
-      </Card>
+    return (
+        <View style={[styles.container, { backgroundColor: theme.colors.secondary }]}>
 
-      <View style={styles.grid}>
-        {/* ---------- LIVE LOCATION ---------- */}
-        <Card style={[styles.card, { backgroundColor: colors.surface, flex: 1 }]}>
-          <Card.Content>
-            <Text style={[styles.title, { color: colors.text }]}>Live Location</Text>
-
-            <View style={styles.mapBox}>
-              <Image
-                source={{
-                  uri: "https://via.placeholder.com/300x200.png?text=Map+Preview",
-                }}
-                style={styles.mapImage}
-              />
-            </View>
-          </Card.Content>
-        </Card>
-
-        {/* ---------- CLIP LIST ---------- */}
-        <Card style={[styles.card, { backgroundColor: colors.surface, flex: 1 }]}>
-          <Card.Content>
-            <Text style={[styles.title, { color: colors.text }]}>Clip List</Text>
-
-            {/* Filters */}
-            <View style={styles.filterRow}>
-              <Button
-                mode="outlined"
-                style={styles.filterBtn}
-                labelStyle={{ color: colors.text }}
-              >
-                Date ⌄
-              </Button>
-
-              <Button
-                mode="outlined"
-                style={styles.filterBtn}
-                labelStyle={{ color: colors.text }}
-              >
-                Camera ⌄
-              </Button>
+            {/* Header */}
+            <View style={{ alignItems: "center", marginBottom: 30 }}>
+                <IconButton icon="remote" size={48} iconColor={theme.colors.primary} />
+                <Text style={styles.title}>Remote Control</Text>
+                <Text style={styles.deviceId}>Device ID: {deviceId}</Text>
             </View>
 
-            <View style={styles.filterRow}>
-              <Button
-                mode="outlined"
-                style={[styles.filterBtn, { flex: 0.7 }]}
-                labelStyle={{ color: colors.text }}
-              >
-                5 min
-              </Button>
+            {/* Status */}
+            <Card style={[styles.card, { backgroundColor: theme.colors.card }]}>
+                <Card.Content>
+                    <Text style={styles.label}>Current Status</Text>
+                    <Text style={[styles.value, { color: theme.colors.primary }]}>
+                        {status}
+                    </Text>
+                </Card.Content>
+            </Card>
 
-              <Button
-                mode="outlined"
-                style={[styles.filterBtn, { flex: 1 }]}
-                labelStyle={{ color: colors.text }}
-              >
-                framepz
-              </Button>
+            {/* Buttons */}
+            <View style={styles.buttons}>
+                <Button
+                    mode="contained"
+                    onPress={() => sendCommand("START_RECORD")}
+                    icon="record-circle"
+                    style={[styles.btn, { backgroundColor: "#FF5252" }]}
+                >
+                    Start Recording
+                </Button>
 
-              <Button
-                mode="outlined"
-                style={[styles.filterBtn, { flex: 0.8 }]}
-                labelStyle={{ color: colors.text }}
-              >
-                SHA-1
-              </Button>
+                <Button
+                    mode="contained"
+                    onPress={() => sendCommand("STOP_RECORD")}
+                    icon="stop-circle"
+                    style={[styles.btn, { backgroundColor: theme.colors.danger }]}
+                >
+                    Stop Recording
+                </Button>
             </View>
 
-            {/* Fake Clip List */}
-            <View style={{ marginTop: 12 }}>
-              <Text style={[styles.clipItem, { color: colors.text }]}>
-                rear_2024_11_12_001.mp4{"\n"}
-                <Text style={{ color: colors.subtext }}>5 min • 1050p</Text>
-              </Text>
-
-              <Text style={[styles.clipItem, { color: colors.text }]}>
-                front_2024_11_12_001.mp4{"\n"}
-                <Text style={{ color: colors.subtext }}>5 min • 750p</Text>
-              </Text>
-
-              <Text style={[styles.clipItem, { color: colors.text }]}>
-                rear_2024_11_12_002.mp4{"\n"}
-                <Text style={{ color: colors.subtext }}>Uploading…</Text>
-              </Text>
-            </View>
-          </Card.Content>
-        </Card>
-      </View>
-    </ScrollView>
-  );
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    padding: 10,
-    borderRadius: 14,
-    marginBottom: 16,
-    elevation: 3,
-  },
+    container: { flex: 1, paddingHorizontal: 25, paddingTop: 40 },
 
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
+    title: { fontSize: 26, fontWeight: "700", color: "white", marginTop: 5 },
+    deviceId: { fontSize: 14, color: "#8FA3B0", marginTop: 5 },
 
-  label: {
-    fontSize: 14,
-  },
+    card: {
+        paddingVertical: 22,
+        borderRadius: 16,
+        marginBottom: 30,
+    },
 
-  value: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 14,
-  },
+    label: { color: "#8FA3B0", fontSize: 14 },
+    value: { fontSize: 22, fontWeight: "700", marginTop: 6 },
 
-  row: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 10,
-  },
+    buttons: { gap: 14 },
 
-  btnPrimary: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-  },
-
-  btn: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-  },
-
-  grid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 16,
-  },
-
-  mapBox: {
-    height: 150,
-    borderRadius: 12,
-    overflow: "hidden",
-    marginTop: 10,
-  },
-
-  mapImage: {
-    width: "100%",
-    height: "100%",
-  },
-
-  filterRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 10,
-  },
-
-  filterBtn: {
-    flex: 1,
-    borderRadius: 8,
-    paddingVertical: 4,
-    borderWidth: 1,
-  },
-
-  clipItem: {
-    marginBottom: 14,
-    fontSize: 14,
-    lineHeight: 18,
-  },
+    btn: { paddingVertical: 10, borderRadius: 12 },
 });
