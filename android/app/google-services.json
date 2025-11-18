@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1095758776214",
+    "project_id": "valriskemitter",
+    "storage_bucket": "valriskemitter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1095758776214:android:477eddd8536946edeeffb7",
+        "android_client_info": {
+          "package_name": "com.valriskemitter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKNuvbXrSt8NVrs3Zf-OiFF9iye7IwEIM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1095758776214:android:d7358761a4a07a53eeffb7",
+        "android_client_info": {
+          "package_name": "com.valriskrecevier"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKNuvbXrSt8NVrs3Zf-OiFF9iye7IwEIM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
