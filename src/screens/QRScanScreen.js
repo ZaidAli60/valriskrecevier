@@ -98,15 +98,6 @@ export default function QRScanScreen({ navigation }) {
       // 2️⃣ OTP VALID — DELETE IT
       await otpRef.delete();
 
-      // 3️⃣ Save pairing info
-      // await firestore()
-      //   .collection("pairs")
-      //   .doc(deviceId)
-      //   .set({
-      //     receiverId: auth().currentUser?.uid || "receiver_device",
-      //     pairedAt: Date.now(),
-      //   });
-
       await firestore()
         .collection("devices")
         .doc(deviceId)

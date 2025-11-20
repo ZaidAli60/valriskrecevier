@@ -1,9 +1,51 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Button, useTheme } from "react-native-paper";
+import firestore from "@react-native-firebase/firestore";
+import auth from "@react-native-firebase/auth";
 
 export default function HomeScreen({ navigation }) {
     const { colors } = useTheme();
+
+        useEffect(() => {
+        const checkPairStatus = async () => {
+            try {
+                const receiverId = auth().currentUser?.uid;
+
+                if (!receiverId) return;
+
+                console.log("🔍 Checking if Receiver is already paired...");
+
+                const devicesSnap = await firestore()
+                    .collection("devices")
+                    .get();
+
+                for (const doc of devicesSnap.docs) {
+                    const statusRef = doc.ref
+                        .collection("pairStatus")
+                        .doc("status");
+
+                    const snap = await statusRef.get();
+
+                    if (snap.exists && snap.data()?.receiverId === receiverId) {
+                        const deviceId = doc.id;
+
+                        console.log("✅ Receiver already paired with device:", deviceId);
+
+                        navigation.replace("dashboard", { deviceId });
+                        return;
+                    }
+                }
+
+                console.log("❌ No pairing found. Show normal home.");
+
+            } catch (e) {
+                console.log("Pair Check Error:", e);
+            }
+        };
+
+        checkPairStatus();
+    }, []);
 
     return (
         <View style={[styles.container, { backgroundColor: colors.secondary }]}>
