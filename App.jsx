@@ -4,11 +4,11 @@
 //  *
 //  * @format
 //  */
-// import { LogBox } from "react-native";
-// LogBox.ignoreLogs([
-//   "InteractionManager has been deprecated",
-//   "Sending `onAnimatedValueUpdate` with no listeners registered."
-// ]);
+import { LogBox } from "react-native";
+LogBox.ignoreLogs([
+  "InteractionManager has been deprecated",
+  "Sending `onAnimatedValueUpdate` with no listeners registered."
+]);
 import React, { useEffect } from "react";
 // import { NavigationContainer } from "@react-navigation/native";
 import { Provider as PaperProvider } from "react-native-paper";
