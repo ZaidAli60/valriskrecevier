@@ -67,6 +67,7 @@ export default function QRScanScreen({ navigation }) {
       if (!deviceId || !otp) {
         throw new Error("Incomplete QR data.");
       }
+      const receiverId = auth().currentUser.uid;
 
       console.log("🔍 Scanned → Device:", deviceId, "OTP:", otp);
 
