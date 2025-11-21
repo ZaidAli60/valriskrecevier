@@ -97,7 +97,19 @@ export default function QRScanScreen({ navigation }) {
 
       // 2️⃣ OTP VALID — DELETE IT
       await otpRef.delete();
+      // 🔥 CREATE PARENT DEVICE DOCUMENT — THIS WAS MISSING IN YOUR CODE
+      await firestore()
+        .collection("devices")
+        .doc(deviceId)
+        .set(
+          {
+            receiverId,
+            pairedAt: Date.now(),
+          },
+          { merge: true }
+        );
 
+      // Save pair status also
       await firestore()
         .collection("devices")
         .doc(deviceId)
@@ -105,7 +117,7 @@ export default function QRScanScreen({ navigation }) {
         .doc("status")
         .set({
           paired: true,
-          receiverId: auth().currentUser?.uid || "receiver_device",
+          receiverId,
           pairedAt: Date.now(),
         });
 
