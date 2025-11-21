@@ -24,10 +24,10 @@
 //                 const data = doc.data();
 
 //                 // Prevent crashes if data is undefined
-//                 if (!data || data.recording === undefined) {
-//                     setStatus("Idle");
-//                     return;
-//                 }
+// if (!data || data.recording === undefined) {
+//     setStatus("Idle");
+//     return;
+// }
 
 //                 setStatus(data.recording ? "Recording" : "Idle");
 //             });
@@ -145,6 +145,10 @@ export default function DashboardScreen({ route }) {
                 }
 
                 const data = doc.data();
+                if (!data || data.recording === undefined) {
+                    setStatus("Idle");
+                    return;
+                }
                 setStatus(data.recording ? "Recording" : "Idle");
             });
 
