@@ -138,7 +138,10 @@ export default function DashboardScreen({ route }) {
             .collection("status")
             .doc(deviceId)
             .onSnapshot((doc) => {
-                if (!doc.exists()) return setStatus("Idle");
+                if (!doc.exists()) {
+                    setStatus("Idle");
+                    return;
+                }
 
                 const data = doc.data();
                 if (!data || data.recording === undefined) {
@@ -161,7 +164,7 @@ export default function DashboardScreen({ route }) {
                     time: Date.now(),
                 });
 
-            console.log("📡 CMD:", cmd);
+            console.log("📡 Command Sent →", cmd);
         } catch (err) {
             console.log("❌ Command Error:", err);
         }
@@ -184,7 +187,7 @@ export default function DashboardScreen({ route }) {
                     style={styles.headerIcon}
                 />
                 <Text style={styles.title}>ValRisk Remote Control</Text>
-                <Text style={styles.subtitle}>Device ID: {deviceId}</Text>
+                <Text style={styles.subtitle}>Paired Device: {deviceId}</Text>
             </View>
 
             {/* STATUS CARD */}
@@ -205,55 +208,64 @@ export default function DashboardScreen({ route }) {
             {/* CONTROL PANEL */}
             <View style={styles.controlPanel}>
 
-                <Button
-                    mode="contained"
-                    onPress={() => sendCommand("START_RECORD")}
-                    icon="record-circle"
-                    style={[styles.controlBtn, { backgroundColor: "#FF3B30" }]}
-                    labelStyle={styles.controlLabel}
-                >
-                    Start Recording
-                </Button>
+                {/* Row 1 */}
+                <View style={styles.row}>
+                    <Button
+                        mode="contained"
+                        onPress={() => sendCommand("START_RECORD")}
+                        icon="record-circle"
+                        style={[styles.controlBtn, { backgroundColor: "#FF3B30" }]}
+                        labelStyle={styles.controlLabel}
+                    >
+                        Start
+                    </Button>
 
-                <Button
-                    mode="contained"
-                    onPress={() => sendCommand("STOP_RECORD")}
-                    icon="stop-circle"
-                    style={[styles.controlBtn, { backgroundColor: theme.colors.danger }]}
-                    labelStyle={styles.controlLabel}
-                >
-                    Stop Recording
-                </Button>
+                    <Button
+                        mode="contained"
+                        onPress={() => sendCommand("STOP_RECORD")}
+                        icon="stop-circle"
+                        style={[styles.controlBtn, { backgroundColor: theme.colors.danger }]}
+                        labelStyle={styles.controlLabel}
+                    >
+                        Stop
+                    </Button>
+                </View>
 
-                <Button
-                    mode="contained"
-                    onPress={() => sendCommand("PAUSE_RECORD")}
-                    icon="pause-circle"
-                    style={[styles.controlBtn, { backgroundColor: theme.colors.accent }]}
-                    labelStyle={styles.controlLabel}
-                >
-                    Pause
-                </Button>
+                {/* Row 2 */}
+                <View style={styles.row}>
+                    <Button
+                        mode="contained"
+                        onPress={() => sendCommand("PAUSE_RECORD")}
+                        icon="pause-circle"
+                        style={[styles.controlBtn, { backgroundColor: theme.colors.accent }]}
+                        labelStyle={styles.controlLabel}
+                    >
+                        Pause
+                    </Button>
 
-                <Button
-                    mode="contained"
-                    onPress={() => sendCommand("SNAPSHOT")}
-                    icon="camera"
-                    style={[styles.controlBtn, { backgroundColor: theme.colors.primary }]}
-                    labelStyle={styles.controlLabel}
-                >
-                    Snapshot
-                </Button>
+                    <Button
+                        mode="contained"
+                        onPress={() => sendCommand("SNAPSHOT")}
+                        icon="camera"
+                        style={[styles.controlBtn, { backgroundColor: theme.colors.primary }]}
+                        labelStyle={styles.controlLabel}
+                    >
+                        Snapshot
+                    </Button>
+                </View>
 
-                <Button
-                    mode="contained"
-                    onPress={toggleCameraUI}
-                    icon="camera-switch"
-                    style={[styles.controlBtn, { backgroundColor: "#0096FF" }]}
-                    labelStyle={styles.controlLabel}
-                >
-                    Toggle Camera
-                </Button>
+                {/* Row 3 - Center button */}
+                <View style={styles.rowCenter}>
+                    <Button
+                        mode="contained"
+                        onPress={toggleCameraUI}
+                        icon="camera-switch"
+                        style={[styles.controlBtn, { backgroundColor: "#0096FF", width: "60%" }]}
+                        labelStyle={styles.controlLabel}
+                    >
+                        Toggle Camera
+                    </Button>
+                </View>
 
             </View>
 
@@ -262,12 +274,13 @@ export default function DashboardScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, paddingHorizontal: 24, paddingTop: 38 },
+    container: { flex: 1, paddingHorizontal: 25, paddingTop: 40 },
 
     headerBox: { alignItems: "center", marginBottom: 28 },
     headerIcon: {
         backgroundColor: "rgba(255,255,255,0.05)",
-        marginBottom: -4,
+        borderRadius: 50,
+        padding: 8,
     },
     title: {
         fontSize: 26,
@@ -295,11 +308,23 @@ const styles = StyleSheet.create({
     value: { fontSize: 22, fontWeight: "bold", marginTop: 4 },
 
     controlPanel: {
-        gap: 14,
-        marginTop: 10,
+        gap: 16,
+    },
+
+    row: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        gap: 12,
+    },
+
+    rowCenter: {
+        flexDirection: "row",
+        justifyContent: "center",
+        marginTop: 6,
     },
 
     controlBtn: {
+        flex: 1,
         paddingVertical: 10,
         borderRadius: 14,
         elevation: 3,
