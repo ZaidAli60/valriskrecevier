@@ -121,7 +121,6 @@
 //     },
 // });
 
-
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Button, Card, IconButton, useTheme } from "react-native-paper";
@@ -132,30 +131,26 @@ export default function DashboardScreen({ route }) {
     const { deviceId } = route.params;
 
     const [status, setStatus] = useState("Checking...");
-    const [cameraSide, setCameraSide] = useState("front"); // for UI update only
+    const [cameraSide, setCameraSide] = useState("front");
 
     useEffect(() => {
         const unsub = firestore()
             .collection("status")
             .doc(deviceId)
             .onSnapshot((doc) => {
-                if (!doc.exists) {
-                    setStatus("Idle");
-                    return;
-                }
+                if (!doc.exists()) return setStatus("Idle");
 
                 const data = doc.data();
                 if (!data || data.recording === undefined) {
                     setStatus("Idle");
                     return;
                 }
-                setStatus(data.recording ? "Recording" : "Idle");
+                setStatus(data?.recording ? "Recording" : "Idle");
             });
 
         return () => unsub();
     }, [deviceId]);
 
-    // 🔥 Firestore command sender
     const sendCommand = async (cmd) => {
         try {
             await firestore()
@@ -166,13 +161,12 @@ export default function DashboardScreen({ route }) {
                     time: Date.now(),
                 });
 
-            console.log("📡 Command Sent →", cmd);
+            console.log("📡 CMD:", cmd);
         } catch (err) {
             console.log("❌ Command Error:", err);
         }
     };
 
-    // 🔄 UI update for camera toggle
     const toggleCameraUI = () => {
         setCameraSide((prev) => (prev === "front" ? "back" : "front"));
         sendCommand("TOGGLE_CAMERA");
@@ -182,10 +176,15 @@ export default function DashboardScreen({ route }) {
         <View style={[styles.container, { backgroundColor: theme.colors.secondary }]}>
 
             {/* HEADER */}
-            <View style={{ alignItems: "center", marginBottom: 25 }}>
-                <IconButton icon="remote" size={48} iconColor={theme.colors.primary} />
-                <Text style={styles.title}>Remote Control</Text>
-                <Text style={styles.deviceId}>Paired Device: {deviceId}</Text>
+            <View style={styles.headerBox}>
+                <IconButton
+                    icon="remote"
+                    size={50}
+                    iconColor={theme.colors.primary}
+                    style={styles.headerIcon}
+                />
+                <Text style={styles.title}>ValRisk Remote Control</Text>
+                <Text style={styles.subtitle}>Device ID: {deviceId}</Text>
             </View>
 
             {/* STATUS CARD */}
@@ -196,21 +195,22 @@ export default function DashboardScreen({ route }) {
                         {status}
                     </Text>
 
-                    <Text style={[styles.label, { marginTop: 12 }]}>Camera Side</Text>
+                    <Text style={[styles.label, { marginTop: 15 }]}>Camera Side</Text>
                     <Text style={[styles.value, { color: theme.colors.accent }]}>
                         {cameraSide.toUpperCase()}
                     </Text>
                 </Card.Content>
             </Card>
 
-            {/* BUTTON GROUP */}
-            <View style={styles.buttons}>
+            {/* CONTROL PANEL */}
+            <View style={styles.controlPanel}>
 
                 <Button
                     mode="contained"
                     onPress={() => sendCommand("START_RECORD")}
                     icon="record-circle"
-                    style={[styles.btn, { backgroundColor: "#FF5252" }]}
+                    style={[styles.controlBtn, { backgroundColor: "#FF3B30" }]}
+                    labelStyle={styles.controlLabel}
                 >
                     Start Recording
                 </Button>
@@ -219,7 +219,8 @@ export default function DashboardScreen({ route }) {
                     mode="contained"
                     onPress={() => sendCommand("STOP_RECORD")}
                     icon="stop-circle"
-                    style={[styles.btn, { backgroundColor: theme.colors.danger }]}
+                    style={[styles.controlBtn, { backgroundColor: theme.colors.danger }]}
+                    labelStyle={styles.controlLabel}
                 >
                     Stop Recording
                 </Button>
@@ -228,25 +229,28 @@ export default function DashboardScreen({ route }) {
                     mode="contained"
                     onPress={() => sendCommand("PAUSE_RECORD")}
                     icon="pause-circle"
-                    style={[styles.btn, { backgroundColor: theme.colors.accent }]}
+                    style={[styles.controlBtn, { backgroundColor: theme.colors.accent }]}
+                    labelStyle={styles.controlLabel}
                 >
-                    Pause Recording
+                    Pause
                 </Button>
 
                 <Button
                     mode="contained"
                     onPress={() => sendCommand("SNAPSHOT")}
                     icon="camera"
-                    style={[styles.btn, { backgroundColor: theme.colors.primary }]}
+                    style={[styles.controlBtn, { backgroundColor: theme.colors.primary }]}
+                    labelStyle={styles.controlLabel}
                 >
-                    Capture Snapshot
+                    Snapshot
                 </Button>
 
                 <Button
                     mode="contained"
                     onPress={toggleCameraUI}
                     icon="camera-switch"
-                    style={[styles.btn, { backgroundColor: "#00A9F4" }]}
+                    style={[styles.controlBtn, { backgroundColor: "#0096FF" }]}
+                    labelStyle={styles.controlLabel}
                 >
                     Toggle Camera
                 </Button>
@@ -258,27 +262,51 @@ export default function DashboardScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, paddingHorizontal: 25, paddingTop: 40 },
+    container: { flex: 1, paddingHorizontal: 24, paddingTop: 38 },
 
-    title: { fontSize: 26, fontWeight: "700", color: "white", marginTop: 5 },
-    deviceId: { fontSize: 13, color: "#8FA3B0", marginTop: 5 },
+    headerBox: { alignItems: "center", marginBottom: 28 },
+    headerIcon: {
+        backgroundColor: "rgba(255,255,255,0.05)",
+        marginBottom: -4,
+    },
+    title: {
+        fontSize: 26,
+        fontWeight: "700",
+        color: "white",
+        marginTop: 8,
+        textAlign: "center",
+    },
+    subtitle: {
+        fontSize: 14,
+        color: "#8FA3B0",
+        marginTop: 4,
+        textAlign: "center",
+    },
 
     card: {
-        paddingVertical: 22,
-        borderRadius: 16,
-        marginBottom: 25,
+        paddingVertical: 25,
+        borderRadius: 18,
+        marginBottom: 28,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.06)",
     },
 
     label: { color: "#8FA3B0", fontSize: 14 },
-    value: { fontSize: 22, fontWeight: "700", marginTop: 4 },
+    value: { fontSize: 22, fontWeight: "bold", marginTop: 4 },
 
-    buttons: {
+    controlPanel: {
         gap: 14,
         marginTop: 10,
     },
 
-    btn: {
+    controlBtn: {
         paddingVertical: 10,
-        borderRadius: 12,
+        borderRadius: 14,
+        elevation: 3,
+    },
+
+    controlLabel: {
+        fontSize: 16,
+        fontWeight: "700",
     },
 });
