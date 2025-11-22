@@ -131,7 +131,7 @@ export default function DashboardScreen({ route }) {
     const { deviceId } = route.params;
 
     const [status, setStatus] = useState("Checking...");
-    const [cameraSide, setCameraSide] = useState("front");
+    const [cameraSide, setCameraSide] = useState("back");
 
     useEffect(() => {
         const unsub = firestore()
