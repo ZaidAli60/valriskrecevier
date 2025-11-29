@@ -11,8 +11,8 @@ const Stack = createStackNavigator();
 export default function AppNavigator() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {/* <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="QRScan" component={QRScanScreen} /> */}
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="QRScan" component={QRScanScreen} />
 
             {/* If paired → open Bottom Tabs */}
             <Stack.Screen name="MainTabs" component={BottomTabs} />

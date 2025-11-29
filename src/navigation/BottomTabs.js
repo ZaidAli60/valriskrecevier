@@ -14,9 +14,8 @@ export default function MainTabs({ route }) {
     const theme = useTheme();
 
     // deviceId jo HomeScreen ya QRScan se aya hai
-    // const { deviceId } = route.params;
+    const { deviceId } = route.params;
 
-    const deviceId = "123456"
 
     return (
         <Tab.Navigator
