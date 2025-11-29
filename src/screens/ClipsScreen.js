@@ -26,7 +26,7 @@ export default function ClipsScreen({ route }) {
 
     const [downloading, setDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
-
+    console.log("clips Real time update", clips)
     // Pakistan time format
     const formatPKT = (timestamp) => {
         return new Intl.DateTimeFormat("en-PK", {
