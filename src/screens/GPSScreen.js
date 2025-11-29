@@ -348,7 +348,7 @@ export default function GPSScreen({ route }) {
             animationMode: "easeTo",     // ⭐ required in v10
         });
     };
-    const MAPTILER_API_KEY = "bqNvHLEXSbgEvpYD71XU"
+    const MAPTILER_API_KEY = "pXxz5c1nsseaJMofnL64"
     return (
         <View style={styles.container}>
 
