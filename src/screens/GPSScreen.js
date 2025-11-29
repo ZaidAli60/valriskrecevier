@@ -10,9 +10,6 @@ import { Text } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import firestore from "@react-native-firebase/firestore";
 
-MapLibreGL.config.LOG_LEVEL = "ERROR"; // Only show real issues
-MapLibreGL.config.HTTP_LOG = false;
-
 export default function GPSScreen({ route }) {
     const { deviceId } = route.params; // <-- IMPORTANT from QR pairing
 
