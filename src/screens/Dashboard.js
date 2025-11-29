@@ -233,15 +233,16 @@ export default function DashboardScreen({ route }) {
 
                 {/* Row 2 */}
                 <View style={styles.row}>
-                    <Button
+                    {/* <Button
                         mode="contained"
                         onPress={() => sendCommand("PAUSE_RECORD")}
                         icon="pause-circle"
                         style={[styles.controlBtn, { backgroundColor: theme.colors.accent }]}
                         labelStyle={styles.controlLabel}
+                        disabled
                     >
                         Pause
-                    </Button>
+                    </Button> */}
 
                     <Button
                         mode="contained"
