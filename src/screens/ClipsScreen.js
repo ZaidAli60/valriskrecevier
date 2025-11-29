@@ -42,28 +42,23 @@ export default function ClipsScreen({ route }) {
     };
 
     // Load clips
-    const loadClips = async () => {
-        try {
-            const snap = await firestore()
-                .collection("clips")
-                .where("deviceId", "==", deviceId)
-                .orderBy("createdAt", "desc")
-                .get();
-
-            const list = snap.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
-
-            setClips(list);
-        } catch (err) {
-            console.log("❌ Error loading clips:", err);
-        }
-        setLoading(false);
-    };
-
     useEffect(() => {
-        if (deviceId) loadClips();
+        if (!deviceId) return;
+
+        const unsubscribe = firestore()
+            .collection("clips")
+            .where("deviceId", "==", deviceId)
+            .orderBy("createdAt", "desc")
+            .onSnapshot((snap) => {
+                const list = snap.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                setClips(list);
+                setLoading(false);
+            });
+
+        return () => unsubscribe();
     }, [deviceId]);
 
     const playVideo = (url) => {
