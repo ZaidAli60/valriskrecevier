@@ -463,15 +463,12 @@
 //     },
 // });
 
-
-
 import React, { useEffect, useState, useRef } from "react";
 import {
     View,
     StyleSheet,
     Animated,
     TouchableOpacity,
-    Image
 } from "react-native";
 
 import {
@@ -482,28 +479,26 @@ import {
 
 import { Text } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import Geolocation from "@react-native-community/geolocation";   // ⭐ YOUR LOCATION
 import firestore from "@react-native-firebase/firestore";
 
 export default function GPSScreen({ route }) {
     const { deviceId } = route.params;
 
-    const [myLocation, setMyLocation] = useState(null);     // Receiver location
-    const [emitterLoc, setEmitterLoc] = useState(null);     // Emitter location
+    const [location, setLocation] = useState(null);
     const [city, setCity] = useState("Loading...");
     const [country, setCountry] = useState("Loading...");
 
-    const pulseAnim = useRef(new Animated.Value(1)).current;
     const cameraRef = useRef(null);
+    const pulseAnim = useRef(new Animated.Value(1)).current;
 
     const MAPTILER_API_KEY = "pXxz5c1nsseaJMofnL64";
 
-    // ⭐ Animate Receiver GPS icon
+    // ⭐ Pulse Animation
     useEffect(() => {
         Animated.loop(
             Animated.sequence([
                 Animated.timing(pulseAnim, {
-                    toValue: 1.4,
+                    toValue: 1.5,
                     duration: 1200,
                     useNativeDriver: true,
                 }),
@@ -516,22 +511,40 @@ export default function GPSScreen({ route }) {
         ).start();
     }, []);
 
-    // ⭐ Get Receiver device LIVE location
-    useEffect(() => {
-        Geolocation.watchPosition(
-            (pos) => {
-                setMyLocation({
-                    latitude: pos.coords.latitude,
-                    longitude: pos.coords.longitude,
-                });
-            },
-            (err) => console.log("GPS ERR =>", err),
-            { enableHighAccuracy: true, distanceFilter: 2 }
-        );
-    }, []);
+    // ⭐ Reverse Geocoding
+    const getLocationInfo = async (lat, lng) => {
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
 
-    // ⭐ Emitter real-time location from Firestore
+            const res = await fetch(url, {
+                headers: {
+                    "User-Agent": "ValRiskReceiver/1.0",
+                    "Accept-Language": "en",
+                },
+            });
+
+            const data = await res.json();
+            const place = data.address;
+
+            setCity(
+                place.city ||
+                place.town ||
+                place.village ||
+                place.state ||
+                "Unknown"
+            );
+
+            setCountry(place.country || "Unknown");
+        } catch (err) {
+            setCity("Unknown");
+            setCountry("Unknown");
+        }
+    };
+
+    // ⭐ Firestore Real-time Emitter GPS Listener
     useEffect(() => {
+        if (!deviceId) return;
+
         const unsub = firestore()
             .collection("devices")
             .doc(deviceId)
@@ -540,101 +553,86 @@ export default function GPSScreen({ route }) {
             .onSnapshot((doc) => {
                 if (doc.exists) {
                     const gps = doc.data();
-                    setEmitterLoc({
+
+                    setLocation({
                         latitude: gps.lat,
                         longitude: gps.lng,
                     });
+
+                    getLocationInfo(gps.lat, gps.lng);
                 }
             });
 
         return () => unsub();
-    }, []);
+    }, [deviceId]);
 
-    // ⭐ Recenter map to Emitter
+    // ⭐ Recenter Button
     const recenter = () => {
-        if (!emitterLoc) return;
+        if (!location) return;
 
         cameraRef.current?.setCamera({
-            centerCoordinate: [emitterLoc.longitude, emitterLoc.latitude],
+            centerCoordinate: [location.longitude, location.latitude],
             zoomLevel: 14,
-            animationDuration: 700,
+            animationDuration: 800,
             animationMode: "easeTo",
         });
     };
 
     return (
         <View style={styles.container}>
-            {/* 📌 STATUS CARD */}
+
+            {/* 🔥 Status Card */}
             <View style={styles.statusCard}>
                 <Text style={styles.label}>Emitter Current Location</Text>
 
                 <Text style={styles.cityText}>📍 {city}</Text>
                 <Text style={styles.countryText}>🌎 {country}</Text>
 
-                {emitterLoc ? (
+                {location ? (
                     <Text style={styles.coords}>
-                        Lat: {emitterLoc.latitude.toFixed(4)} | Lng: {emitterLoc.longitude.toFixed(4)}
+                        Lat: {location.latitude.toFixed(4)} | 
+                        Lng: {location.longitude.toFixed(4)}
                     </Text>
                 ) : (
                     <Text style={styles.coords}>Waiting for GPS...</Text>
                 )}
             </View>
 
-            {/* 🗺 MAP VIEW */}
+            {/* 🔥 MapLibre v10 */}
             <MapView
                 style={styles.map}
                 mapStyle={`https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_API_KEY}`}
                 compassEnabled={false}
                 logoEnabled={false}
             >
-
-                {/* 🟦 CUSTOM BLUE DOT (Receiver Location) */}
-                {myLocation && (
-                    <PointAnnotation
-                        id="receiver-gps"
-                        coordinate={[myLocation.longitude, myLocation.latitude]}
-                    >
-                        <Animated.View
-                            style={{ transform: [{ scale: pulseAnim }] }}
-                        >
-                            <Image
-                                source={require("../assets/gps.png")}
-                                style={{ width: 26, height: 26 }}
-                                resizeMode="contain"
-                            />
-                        </Animated.View>
-                    </PointAnnotation>
-                )}
-
-                {/* 🟢 EMITTER LIVE MARKER */}
-                {emitterLoc && (
-                    <PointAnnotation
-                        id="emitter"
-                        coordinate={[emitterLoc.longitude, emitterLoc.latitude]}
-                    >
-                        <Animated.View
-                            style={[
-                                styles.pulseCircle,
-                                { transform: [{ scale: pulseAnim }] },
-                            ]}
+                {location && (
+                    <>
+                        <Camera
+                            ref={cameraRef}
+                            zoomLevel={14}
+                            centerCoordinate={[location.longitude, location.latitude]}
+                            animationMode="easeTo"
+                            animationDuration={800}
                         />
-                        <View style={styles.centerDot} />
-                    </PointAnnotation>
-                )}
 
-                {emitterLoc && (
-                    <Camera
-                        ref={cameraRef}
-                        zoomLevel={14}
-                        centerCoordinate={[emitterLoc.longitude, emitterLoc.latitude]}
-                        animationMode="easeTo"
-                        animationDuration={800}
-                    />
+                        {/* 🔵 Pulse Marker */}
+                        <PointAnnotation
+                            id="gps-marker"
+                            coordinate={[location.longitude, location.latitude]}
+                        >
+                            <Animated.View
+                                style={[
+                                    styles.pulseCircle,
+                                    { transform: [{ scale: pulseAnim }] },
+                                ]}
+                            />
+                            <View style={styles.centerDot} />
+                        </PointAnnotation>
+                    </>
                 )}
-
             </MapView>
 
-            {/* 🎯 RECENTER BUTTON */}
+            {/* 🎯 Recenter */}
             <TouchableOpacity style={styles.recenterBtn} onPress={recenter}>
                 <Icon name="crosshairs-gps" size={26} color="white" />
             </TouchableOpacity>
@@ -672,6 +670,7 @@ const styles = StyleSheet.create({
         backgroundColor: "rgba(0, 229, 168, 0.25)",
         position: "absolute",
     },
+
     centerDot: {
         width: 16,
         height: 16,
