@@ -126,7 +126,7 @@ export default function QRScanScreen({ navigation }) {
       console.log("🔗 Pairing saved.");
 
       // 4️⃣ Navigate to dashboard with device ID
-      navigation.replace("dashboard", { deviceId });
+      navigation.replace("MainTabs", { deviceId });
 
     } catch (err) {
       console.log("QR ERROR:", err);

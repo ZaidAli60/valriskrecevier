@@ -16,7 +16,7 @@ export default function HomeScreen({ navigation }) {
         checkIfReceiverAlreadyPaired();
     }, []);
 
-    // 🔥 CHECK IF THIS RECEIVER IS ALREADY PAIRED
+    // CHECK IF THIS RECEIVER IS ALREADY PAIRED
     const checkIfReceiverAlreadyPaired = async () => {
         try {
             // Ensure receiver login
@@ -49,7 +49,7 @@ export default function HomeScreen({ navigation }) {
 
                 // Auto navigate after short delay
                 setTimeout(() => {
-                    navigation.replace("dashboard", { deviceId: found });
+                    navigation.replace("MainTabs", { deviceId: found });
                 }, 500);
             } else {
                 console.log("❌ No pairing found. Showing home screen.");
