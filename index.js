@@ -5,24 +5,24 @@
 import { AppRegistry } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
-globalThis.RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS = true;
-// globalThis.MbglLogging = {
-//   level: 'error', // only show critical errors
-// };
-
 import { Logger } from "@maplibre/maplibre-react-native";
 
-// Hide tile-cancel spam
-Logger.setLogCallback(log => {
-    const msg = log.message || "";
+// Disable noisy MapLibre warnings
+Logger.setLogCallback((log) => {
+    const { message } = log;
 
     if (
-        msg.includes("Request failed due to a permanent error: Canceled") ||
-        msg.includes("Socket Closed")
+        message.includes("source must have tiles") ||
+        message.includes("Request failed due to a permanent error") ||
+        message.includes("stream was reset: CANCEL") ||
+        message.includes("Canceled") ||
+        message.includes("Socket Closed")
     ) {
-        return true;
+        return true; // hide it
     }
-    return false;
-})
+
+    return false; // show other important logs
+});
+globalThis.RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS = true;
 
 AppRegistry.registerComponent(appName, () => App);
