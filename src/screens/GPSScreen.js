@@ -348,7 +348,7 @@ export default function GPSScreen({ route }) {
             animationMode: "easeTo",     // ⭐ required in v10
         });
     };
-
+    const MAPTILER_API_KEY = "bqNvHLEXSbgEvpYD71XU"
     return (
         <View style={styles.container}>
 
@@ -371,7 +371,8 @@ export default function GPSScreen({ route }) {
             {/* 🔥 MapLibre v10 Updated */}
             <MapView
                 style={styles.map}
-                mapStyle="https://tiles.openfreemap.org/styles/liberty"   // ✅ UPDATED
+                // mapStyle="https://tiles.openfreemap.org/styles/liberty"   // ✅ UPDATED
+                mapStyle={`https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_API_KEY}`}
                 compassEnabled={false}
                 logoEnabled={false}
             >
